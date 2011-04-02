@@ -63,22 +63,92 @@ namespace RayTracer
             for(int l=0;l<m_Scene->GetNrPrimitives();l++)
             {
                 Primitive* p=m_Scene->GetPrimitive(l);
+///////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
+///////////The simplest way to deal with the light
+//                if(p->IsLight())
+//                {
+//                    Primitive* light=p;
+//                    vector3 L=((Sphere*)light)->GetCentre() - pi;
+//                    NORMALIZE3( L )
+//                    vector3 N=prim->GetNormal(pi);
+//                    if ((prim->GetMaterial())->GetDiffuse() > 0)
+//                    {
+//                        float dot = DOT3( N, L );
+//                        if (dot > 0)
+//                        {
+//                            float diff = dot * prim->GetMaterial()->GetDiffuse();
+//                            // add diffuse component to ray color
+//                            a_Acc += diff * prim->GetMaterial()->GetColor() * light->GetMaterial()->GetColor();
+//                        }
+//                    }
+//                }
+
+                // handle point light source
                 if(p->IsLight())
                 {
                     Primitive* light=p;
-                    vector3 L=((Sphere*)light)->GetCentre() - pi;
-                    NORMALIZE3( L )
-                    vector3 N=prim->GetNormal(pi);
-                    if ((prim->GetMaterial())->GetDiffuse() > 0)
+                    float shade=1.0f;
+                    if(light->GetType()==Primitive::SPHERE)
                     {
-                        float dot = DOT3( N, L );
-                        if (dot > 0)
+                        vector3 L=((Sphere*)light)->GetCentre() - pi;
+                        float tdist=LENGTH3( L );
+                        L *= (1.0f / tdist);
+                        Ray r = Ray( pi + L * EPSILON, L );
+                        for ( int s = 0; s < m_Scene->GetNrPrimitives(); s++ )
                         {
-                            float diff = dot * prim->GetMaterial()->GetDiffuse();
-                            // add diffuse component to ray color
-                            a_Acc += diff * prim->GetMaterial()->GetColor() * light->GetMaterial()->GetColor();
+                            Primitive* pr = m_Scene->GetPrimitive( s );
+                            if ((pr != light) && (pr->Intersect( r, tdist )))
+                            {
+                                shade = 0;
+                                break;
+                            }
                         }
                     }
+
+                    //calucate diffuse shading
+                    vector3 L = ((Sphere*)light)->GetCentre() - pi;
+                    NORMALIZE3( L )
+                    vector3 N = prim->GetNormal( pi );
+                    if (prim->GetMaterial()->GetDiffuse() > 0)
+                    {
+                        float dot = DOT3( L, N );
+                        if (dot > 0)
+                        {
+                            float diff = dot * prim->GetMaterial()->GetDiffuse() * shade;
+                            // add diffuse component to ray color
+                            a_Acc += diff * light->GetMaterial()->GetColor() * prim->GetMaterial()->GetColor();
+                        }
+                    }
+                    // determine specular component
+                    if (prim->GetMaterial()->GetSpecular() > 0)
+                    {
+                        // point light source: sample once for specular highlight
+                        vector3 V = a_ray.GetDirection();
+                        vector3 R = L - 2.0f * DOT3( L, N ) * N;
+                        float dot = DOT3( V, R );
+                        if (dot > 0)
+                        {
+                            float spec = powf( dot, 20 ) * prim->GetMaterial()->GetSpecular() * shade;
+                            // add specular component to ray color
+                            a_Acc += spec * light->GetMaterial()->GetColor();
+                        }
+                    }
+                }
+            }
+
+            // calculate reflection
+            float refl = prim->GetMaterial()->GetReflection();
+            if (refl > 0.0f)
+            {
+                vector3 N = prim->GetNormal( pi );
+                vector3 R = a_ray.GetDirection() - 2.0f * DOT3( a_ray.GetDirection(), N ) * N;
+                if (a_Depth < TRACEDEPTH)
+                {
+                    Color rcol( 0, 0, 0 );
+                    float dist;
+                    RayTrace( Ray( pi + R * EPSILON, R ), rcol, a_Depth + 1, a_RIndex, dist );
+                    a_Acc += refl * rcol * prim->GetMaterial()->GetColor();
                 }
             }
         }
