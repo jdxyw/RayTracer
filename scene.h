@@ -18,6 +18,9 @@ private:
     Color m_Color;
     float m_Refl;
     float m_Diff;
+    float m_Refr;
+    float m_Spec;
+    float m_RIndex;
 
 public:
     Material();
@@ -31,6 +34,8 @@ public:
     {
         m_Refl=a_Refl;
     }
+    void SetSpecular( float a_Spec ) { m_Spec = a_Spec; }
+    void SetRefraction( float a_Refr ) { m_Refr = a_Refr; }
     float GetSpecular()
     {
         return 1.0f-m_Diff;
@@ -42,6 +47,18 @@ public:
     float GetReflection()
     {
         return m_Refl;
+    }
+    float GetRefraction()
+    {
+        return m_Refr;
+    }
+    void SetRefrIndex( float a_Refr )
+    {
+        m_RIndex = a_Refr;
+    }
+    float GetRefrIndex()
+    {
+        return m_RIndex;
     }
 
 };

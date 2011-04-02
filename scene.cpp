@@ -92,17 +92,23 @@ namespace RayTracer
         m_Primitive[0] = new PlanePrim( vector3( 0.0, 1, 0 ), 4.4f );
         m_Primitive[0]->SetName( "plane" );
         m_Primitive[0]->GetMaterial()->SetReflection( 0 );
+        m_Primitive[0]->GetMaterial()->SetReflection(0);
+        m_Primitive[0]->GetMaterial()->SetRefraction(0);
         m_Primitive[0]->GetMaterial()->SetDiffuse( 1.0f );
         m_Primitive[0]->GetMaterial()->SetColor( Color( 0.4f, 0.3f, 0.3f ) );
         // big sphere
         m_Primitive[1] = new Sphere( vector3( 1, -0.8f, 3 ), 2.5f );
         m_Primitive[1]->SetName( "big sphere" );
         m_Primitive[1]->GetMaterial()->SetReflection( 0.6f );
+        m_Primitive[1]->GetMaterial()->SetRefraction(0.4);
+        m_Primitive[1]->GetMaterial()->SetRefrIndex(1.3);
         m_Primitive[1]->GetMaterial()->SetColor( Color( 0.7f, 0.7f, 0.7f ) );
         // small sphere
         m_Primitive[2] = new Sphere( vector3( -5.5f, -0.5, 7 ), 2 );
         m_Primitive[2]->SetName( "small sphere" );
-        m_Primitive[2]->GetMaterial()->SetReflection( 1.0f );
+        m_Primitive[2]->GetMaterial()->SetReflection( 0.5f );
+        m_Primitive[2]->GetMaterial()->SetRefraction(0);
+        m_Primitive[2]->GetMaterial()->SetRefrIndex(1.3);
         m_Primitive[2]->GetMaterial()->SetDiffuse( 0.1f );
         m_Primitive[2]->GetMaterial()->SetColor( Color( 0.7f, 0.7f, 1.0f ) );
         // light source 1

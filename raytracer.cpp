@@ -106,32 +106,36 @@ namespace RayTracer
                         }
                     }
 
+                    if(shade>0)
+                    {
+
                     //calucate diffuse shading
-                    vector3 L = ((Sphere*)light)->GetCentre() - pi;
-                    NORMALIZE3( L )
-                    vector3 N = prim->GetNormal( pi );
-                    if (prim->GetMaterial()->GetDiffuse() > 0)
-                    {
-                        float dot = DOT3( L, N );
-                        if (dot > 0)
+                        vector3 L = ((Sphere*)light)->GetCentre() - pi;
+                        NORMALIZE3( L )
+                        vector3 N = prim->GetNormal( pi );
+                        if (prim->GetMaterial()->GetDiffuse() > 0)
                         {
-                            float diff = dot * prim->GetMaterial()->GetDiffuse() * shade;
-                            // add diffuse component to ray color
-                            a_Acc += diff * light->GetMaterial()->GetColor() * prim->GetMaterial()->GetColor();
+                            float dot = DOT3( L, N );
+                            if (dot > 0)
+                            {
+                                float diff = dot * prim->GetMaterial()->GetDiffuse() * shade;
+                                // add diffuse component to ray color
+                                a_Acc += diff * light->GetMaterial()->GetColor() * prim->GetMaterial()->GetColor();
+                            }
                         }
-                    }
-                    // determine specular component
-                    if (prim->GetMaterial()->GetSpecular() > 0)
-                    {
-                        // point light source: sample once for specular highlight
-                        vector3 V = a_ray.GetDirection();
-                        vector3 R = L - 2.0f * DOT3( L, N ) * N;
-                        float dot = DOT3( V, R );
-                        if (dot > 0)
+                        // determine specular component
+                        if (prim->GetMaterial()->GetSpecular() > 0)
                         {
-                            float spec = powf( dot, 20 ) * prim->GetMaterial()->GetSpecular() * shade;
-                            // add specular component to ray color
-                            a_Acc += spec * light->GetMaterial()->GetColor();
+                            // point light source: sample once for specular highlight
+                            vector3 V = a_ray.GetDirection();
+                            vector3 R = L - 2.0f * DOT3( L, N ) * N;
+                            float dot = DOT3( V, R );
+                            if (dot > 0)
+                            {
+                                float spec = powf( dot, 20 ) * prim->GetMaterial()->GetSpecular() * shade;
+                                // add specular component to ray color
+                                a_Acc += spec * light->GetMaterial()->GetColor();
+                            }
                         }
                     }
                 }
@@ -151,6 +155,28 @@ namespace RayTracer
                     a_Acc += refl * rcol * prim->GetMaterial()->GetColor();
                 }
             }
+
+            //calculate refraction
+//            float refr = prim->GetMaterial()->GetRefraction();
+//            if ((refr > 0) && (a_Depth < TRACEDEPTH))
+//            {
+//                float rindex = prim->GetMaterial()->GetRefrIndex();
+//                float n = a_RIndex / rindex;
+//                vector3 N = prim->GetNormal( pi ) * (float)result;
+//                float cosI = -DOT3( N, a_ray.GetDirection() );
+//                float cosT2 = 1.0f - n * n * (1.0f - cosI * cosI);
+//                if (cosT2 > 0.0f)
+//                {
+//                        vector3 T = (n * a_ray.GetDirection()) + (n * cosI - sqrtf( cosT2 )) * N;
+//                        Color rcol( 0, 0, 0 );
+//                        float dist;
+//                        RayTrace( Ray( pi + T * EPSILON, T ), rcol, a_Depth + 1, rindex, dist );
+//                        // apply Beer's law
+//                        Color absorbance = prim->GetMaterial()->GetColor() * 0.15f * -dist;
+//                        Color transparency = Color( expf( absorbance.r ), expf( absorbance.g ), expf( absorbance.b ) );
+//                        a_Acc += rcol * transparency;
+//                }
+//            }
         }
         return prim;
     }

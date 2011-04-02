@@ -66,6 +66,7 @@ void MainWindow::paintEvent(QPaintEvent *)
             image.setPixel(j,i,qRgb(r,g,b));
         }
     }
+    //image.save("nonrefraction.bmp");
     QPainter painter(this);
     painter.drawImage(rect(),image,image.rect());
 }
